@@ -1,0 +1,67 @@
+.bg-transparent
+{
+    background-image: url('../images/stormcloudsE.jpg');
+      /* Half height */
+    height: auto;
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#boxThing{
+    /*transform: translateY(66%); */
+    background-color: rgb(255, 85, 0);
+
+    width: 50px;
+    height: 50px;
+    z-index: 999;
+    text-align: center;
+    padding: 12px 0;
+    font-family: 'Open Sans';
+    font-weight: 1000;
+
+}
+
+.fs-b{
+    font-size: 3em;
+}
+
+.bg-offwhite{
+    background-color: rgb(255, 255, 255);
+}
+
+.nav-box
+{
+    border-radius: 5px;
+    font-family: 'Open Sans';
+    font-weight: 1000;
+    color: rgb(69, 69, 69)!important;
+}
+
+.nav-box:hover
+{
+    background-color: rgb(216, 216, 216);
+}
+
+.navbar-depad
+{
+    /* to remove padding from bootstrap class */
+    padding: 0%!important;
+}
+
+.rubik500 
+{
+    font-family: 'Rubik';
+    color: rgb(255, 255, 255);
+}
+
+.fs-7
+{
+    font-size: 0.8em!important;
+}
+
+.bg-darkviolet{
+    background-color: rgb(20, 19, 37);
+}
