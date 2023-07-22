@@ -34,12 +34,17 @@ function reset() {
 class PointCoords{
     x;
     y;
-    speed;
+    speedY;
+    elasticity;
+    motion;
 
     constructor(xA, yA) {
         this.x = xA;
         this.y = yA;
-        this.speed = 0;
+        this.speedY = 0;
+        this.speedX = 0;
+        this.elasticity = 0.6 + 0.15 * (Math.random() * 2 - 1);
+        this.isActive = true;
     }
 
     rotate(theta, xCentre, yCentre) {
@@ -47,7 +52,47 @@ class PointCoords{
         this.y = Math.sin(theta) * (this.x - xCentre) + Math.cos(theta) * (this.y - yCentre) + yCentre;
     }
 
-    //function that accelerates the point in the down direction (positive y) 
+    //function that accelerates the point in the down direction (positive y)
+    gravitate() {
+        // accelerates point in downward y direction until boundary is reached, until elastic collision
+        // to be called within the context of the animation loop
+        if (this.isActive) {
+
+            // // initial bounce
+
+            //initial y speed and acceleration
+            this.speedY = this.speedY + 0.1;
+            this.y = this.y + this.speedY; // i.e. acceleration, we use kinematic equation p(t) = v * t, here the t is implicitly 1 - each loop tick is 1 unit of time
+
+            // // motion
+
+            // x direction motion
+
+            this.x = this.x + this.speedX;
+
+            if (this.x > 290 || this.x < 10 ){
+                this.speedX = -1 * this.speedX * this.elasticity; // reverse direction and use elasticity coefficient
+            }
+
+            // y direction motion 
+            if (this.y > 290 && this.isActive) {
+                this.speedY = -1 * this.speedY * this.elasticity; // here lies the coefficient of restitution...
+
+                //initialise x speed here upon first bounce
+                while (this.speedX === 0)
+                {
+                    this.speedX = 0.5*this.speedY * Math.round((Math.random() * 2 - 1));
+                }
+
+                if (this.speedY < 0 && this.speedY > -1){
+                    this.isActive = false;
+                    }
+            }
+
+        }
+
+    }
+
 }
 
 class FlowFieldEffect {
@@ -113,14 +158,33 @@ class FlowFieldEffect {
         }
     }
 
+    staticDrawPure() {
+        //calls the draw function on everything in the coordsArray
+        // modify this.radius with a sinusoid? 
+        for (let i = 0; i < this.coordsArray.length; i++){
+            this.#drawPure(this.coordsArray[i].x, this.coordsArray[i].y );
+        }
+    }
+
     #draw(x, y){
         //draws a single frame of animation effect
-        const length = 50;
-
-        //draw line using previous and subsequent coords
 
         this.#ctx.lineWidth = 15 * Math.pow(Math.cos(0.001 * this.time), 2) + 10;
         this.radius = 2*Math.cos(-0.001 * this.time) + 2.9;
+
+        this.time += 0.03;
+
+        //circles
+        this.#ctx.beginPath();
+        this.#ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
+        this.#ctx.fillStyle = "#FF5500FF";
+        this.#ctx.stroke();
+        this.#ctx.fill();
+    
+    }
+
+    #drawPure(x, y){
+        //draws a single frame of animation effect
 
         this.time += 0.03;
 
@@ -147,19 +211,53 @@ class FlowFieldEffect {
         this.#ctx.fillStyle = "#00000080";
         this.#ctx.fillRect(0, 0, 300, 300);
 
-        for (let i = 0; i < this.coordsArray.length; i++){
-            this.coordsArray[i].rotate(this.thetaIncrement, this.widthCentre, this.heightCentre);
+        //rotate
+
+        if (this.thetaIncrement < 0) 
+        {
+            for (let i = 0; i < this.coordsArray.length; i++) {
+                this.coordsArray[i].rotate(this.thetaIncrement, this.widthCentre, this.heightCentre);
+            }
+
+            this.thetaIncrement += 0.00001;
+
+            if (this.frameNum < this.coordsArrayN) {
+                this.iterDraw(this.frameNum)
+                this.frameNum += 1;
+            }
+            else {
+
+                this.staticDraw();
+            }
         }
+        else // this will trigger when rotation appears to stop
+        {
+            //this.radius = 1;
+            //this.#ctx.lineWidth = 1;
 
-        this.thetaIncrement += 0.00001;
+            for (let i = 0; i < this.coordsArray.length; i++) {
+                this.coordsArray[i].gravitate();
+            }
+            this.staticDrawPure();
 
-        if (this.frameNum < this.coordsArrayN) {
-            this.iterDraw(this.frameNum)
-            this.frameNum += 1;
-        }
-        else {
 
-            this.staticDraw();
+            this.radius *= 0.985; // gradually fade out after every draw
+
+            if (this.radius < 0.4)
+            {
+                this.#ctx.lineWidth *= 0.97;
+            }
+
+            if (this.#ctx.lineWidth < 0.2)
+            {
+                //reset object parameters to original
+                this.thetaIncrement = -0.01;
+                this.radius = 4;
+                this.#ctx.lineWidth = 1;
+                this.frameNum = 0;
+                this.coordsArray = this.#createCoords();
+            }
+            
         }
 
 
