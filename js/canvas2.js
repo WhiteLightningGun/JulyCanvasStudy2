@@ -49,6 +49,7 @@ class PointCoords{
     rotate(theta, xCentre, yCentre) {
         this.x = Math.cos(theta) * (this.x - xCentre) - Math.sin(theta) * (this.y - yCentre) + xCentre;
         this.y = Math.sin(theta) * (this.x - xCentre) + Math.cos(theta) * (this.y - yCentre) + yCentre;
+        // perhaps rotating in a third dimension will add some extra spice?
     }
 
     //function that accelerates the point in the down direction (positive y)
@@ -137,8 +138,8 @@ class FlowFieldEffect {
 
         for (let i = 0; i < this.coordsArrayN; i++){
 
-            xCoord = this.#width / 2 + 120 * Math.cos(this.kFactor * time) * Math.cos(time);
-            yCoord = this.#height / 2 + 120 * Math.cos(this.kFactor * time) * Math.sin(time);
+            xCoord = this.#width / 2 + 115 * Math.cos(this.kFactor * time) * Math.cos(time);
+            yCoord = this.#height / 2 + 115 * Math.cos(this.kFactor * time) * Math.sin(time);
             let circle = new PointCoords(xCoord, yCoord);
 
             arrayResult.push(circle);
