@@ -26,7 +26,6 @@ function reset() {
     canvas.height = 300
     flowField = new FlowFieldEffect(ctx, canvas.width, canvas.height, newK.value/5);
 
- 
     flowField.staticDraw();
     flowField.animate();
 }
@@ -43,7 +42,7 @@ class PointCoords{
         this.y = yA;
         this.speedY = 0;
         this.speedX = 0;
-        this.elasticity = 0.6 + 0.15 * (Math.random() * 2 - 1);
+        this.elasticity = 0.85 + 0.30 * (Math.random() * 2 - 1);
         this.isActive = true;
     }
 
@@ -124,9 +123,8 @@ class FlowFieldEffect {
         this.#ctx.fillRect(0, 0, 300, 300);
 
         //pre-compute an array filled with coordinates of figure
-        this.coordsArrayN = 500;
+        this.coordsArrayN = 600;
         this.coordsArray =  this.#createCoords(); // create function that returns array populated with coordinates of rose according to current value of k
-
 
     }
 
@@ -232,8 +230,6 @@ class FlowFieldEffect {
         }
         else // this will trigger when rotation appears to stop
         {
-            //this.radius = 1;
-            //this.#ctx.lineWidth = 1;
 
             for (let i = 0; i < this.coordsArray.length; i++) {
                 this.coordsArray[i].gravitate();
@@ -259,7 +255,6 @@ class FlowFieldEffect {
             }
             
         }
-
 
         flowFieldAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
     }
