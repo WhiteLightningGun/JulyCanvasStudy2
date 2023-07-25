@@ -1,1 +1,10 @@
 particles that conform to an interesting vector image perhaps?
+
+If you want to rotate in 3d remember the following:
+
+In matrix notation instead of 𝑢′=𝑅𝑢 you need to calculate 𝑢′=𝑅(𝑢−𝑂𝑃)+𝑂𝑃, where
+
+u is the vector to rotate
+u’ is the rotated vector
+R is the rotation matrix
+OP is the vector from O to P (that is P-O)

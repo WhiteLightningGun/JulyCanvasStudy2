@@ -9,6 +9,14 @@ window.onload = function () {
     ctx = canvas.getContext('2d');
     canvas.width = 300
     canvas.height = 300
+
+    var myRequestAnimationFrame = window.requestAnimationFrame || 
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
+    
+    window.requestAnimationFrame = myRequestAnimationFrame;
+    
     flowField = new FlowFieldEffect(ctx, canvas.width, canvas.height, 6/5);
 
     flowField.staticDraw();
