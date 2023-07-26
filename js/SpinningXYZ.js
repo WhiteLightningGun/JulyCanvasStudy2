@@ -162,7 +162,7 @@ class VisualiserAnimation {
 
     #coordProjectToScreen(x, y, z)
     {
-        // Orthographic projection calls should be distentangled from vertex drawing
+        // Perspective projection
         // See the perspective model.jpg for details
 
         let xR = x - this.cameraLocation[0]; //xR means x Relative to camera location
@@ -219,24 +219,6 @@ class VisualiserAnimation {
         }
     }
 
-    #rotateMeshZ(speed = 1) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateZ(speed*this.thetaIncrement, this.widthCentre , this.heightCentre);
-        }
-    }
-
-    #rotateMeshY(speed = 1) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateY(speed*this.thetaIncrement, this.widthCentre , 0);
-        }
-    }
-
-    #rotateMeshX(speed = 1) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateX(speed*this.thetaIncrement, this.heightCentre , 0);
-        }
-    }
-
     animate() {
         //background
         this.#ctx.clearRect(0, 0, this.#width, this.#height);
@@ -245,7 +227,7 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(0.5, 3, 1)
+        this.#rotateMeshXYZ(2, 3, 1)
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 
