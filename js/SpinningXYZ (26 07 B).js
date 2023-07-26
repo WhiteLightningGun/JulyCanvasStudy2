@@ -5,6 +5,7 @@ let visualiserAnimation;
 
 window.onload = function () {
     //JS waits for page to load first
+    console.log("hello from updated file");
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     canvas.width = 300
@@ -43,11 +44,7 @@ class PointCoordsNode{
     thetaCount;
     phiCount;
     psiCount;
-    
     decimals;
-
-    cosResult;
-    sinResult;
 
     constructor(xA, yA, zA, nodelinks = []) {
         this.x = xA;
@@ -64,14 +61,12 @@ class PointCoordsNode{
         this.thetaCount = 0; 
         this.phiCount = 0;
         this.psiCount = 0;
-        this.decimals = 3;
+        this.decimals = 2;
         this.cosResult = 0;
         this.sinResult = 0;
-        this.xR = 0;
-        this.yR = 0;
-        this.zR = 0;
 
     }
+
     rotateZ(theta, xCentre, yCentre) { //rotates around the z-axis
         this.thetaCount += theta;
 
@@ -79,33 +74,27 @@ class PointCoordsNode{
         this.y = Math.sin(theta) * (this.x - xCentre) + Math.cos(theta) * (this.y - yCentre) + yCentre;
 
     }
-    //create generalised rotation function that takes 3 arguments and then uses these to modify the original coordinates within a domain of 0 - 2PI
 
-    rotateXYZ(phi, theta, psi, xCentre, yCentre, zCentre)
-    {
+    rotateY(phi, xCentre, zCentre) { // rotates around y-axis, obviously zCentre here will always be zero, but is provided for completeness
         this.phiCount += phi;
-        this.thetaCount += theta;
+
+        this.cosResult = Math.cos(phi).toFixed(this.decimals);
+        this.sinResult = Math.sin(phi).toFixed(this.decimals);
+
+        this.x = this.cosResult * (this.x - xCentre) + this.sinResult * (this.z - zCentre) + xCentre;
+        this.z = -this.sinResult * (this.x - xCentre) + 0 + this.cosResult * (this.z - zCentre) + zCentre;
+
+        
+    }
+
+    rotateX(psi, yCentre, zCentre) { // rotates around x-axis, zCentre will always be zero, but is provided for completeness
         this.psiCount += psi;
 
-        this.xR = this.xOriginal - xCentre;
-        this.yR = this.yOriginal - yCentre;
-        this.zR = this.zOriginal - zCentre;
-
-
-        this.x = this.xR * Math.cos(this.thetaCount) * Math.cos(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) - Math.cos(this.psiCount) * Math.sin(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) + Math.sin(this.psiCount) * Math.sin(this.phiCount))
-            + xCentre;
+        this.y = 0 + (Math.cos(psi) * (this.y - yCentre)) - (Math.sin(psi) * (this.z - zCentre))+ yCentre;
+        this.z = 0 + (Math.sin(psi) * (this.y - yCentre)) + (Math.cos(psi) * (this.z - zCentre)) + zCentre;
         
-        this.y = this.xR * Math.cos(this.thetaCount) * Math.sin(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) + Math.cos(this.psiCount) * Math.cos(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) - Math.sin(this.psiCount) * Math.cos(this.phiCount))
-            + yCentre;
-        
-        this.z = -this.xR * Math.sin(this.thetaCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.cos(this.thetaCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.cos(this.thetaCount))
-            + zCentre;
+        this.y = (this.y).toFixed(this.decimals)
+        this.z = (this.z).toFixed(this.decimals)
     }
 }
 
@@ -128,7 +117,7 @@ class VisualiserAnimation {
         this.heightCentre = height / 2;
         this.time = 0;
         this.radius = 5;
-        this.thetaIncrement = -0.01; // i.e. speed of rotation, don't change this until I have made pi/2 detection more robust
+        this.thetaIncrement = -0.001; // i.e. speed of rotation, don't change this until I have made pi/2 detection more robust
         this.theta = 0;
         this.cameraLocation = [150, 150, 500];
         this.focalLength = 300; //focal length, vaguely analogous to zoom
@@ -206,19 +195,6 @@ class VisualiserAnimation {
         }
     }
 
-    #rotateMeshXYZ(thetaSpeed, phiSpeed, psiSpeed) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateXYZ(
-                thetaSpeed * this.thetaIncrement, 
-                phiSpeed * this.thetaIncrement, 
-                psiSpeed * this.thetaIncrement,
-                this.widthCentre,
-                this.heightCentre,
-                0
-            );
-        }
-    }
-
     #rotateMeshZ(speed = 1) {
         for (let i = 0; i < this.ModelMesh.length; i++) {
             this.ModelMesh[i].rotateZ(speed*this.thetaIncrement, this.widthCentre , this.heightCentre);
@@ -245,7 +221,9 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(0.5, 3, 1)
+        //this.#rotateMeshZ(2);
+        this.#rotateMeshY(6);
+        this.#rotateMeshX(8);
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 

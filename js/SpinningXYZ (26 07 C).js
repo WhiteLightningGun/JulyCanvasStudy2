@@ -64,48 +64,73 @@ class PointCoordsNode{
         this.thetaCount = 0; 
         this.phiCount = 0;
         this.psiCount = 0;
-        this.decimals = 3;
-        this.cosResult = 0;
-        this.sinResult = 0;
-        this.xR = 0;
-        this.yR = 0;
-        this.zR = 0;
+        this.decimals = 10;
+        this.cosResultTheta = 0;
+        this.sinResultTheta = 0;
+        this.cosResultPhi = 0;
+        this.sinResultPhi = 0;
+        this.cosResultPsi = 0;
+        this.sinResultPsi = 0;
 
     }
+
+    //create generalised rotation function that takes 3 arguments and then uses these to sequentially modify the original coordinates within a domain of 0 - 2PI
+
     rotateZ(theta, xCentre, yCentre) { //rotates around the z-axis
         this.thetaCount += theta;
 
-        this.x = Math.cos(theta) * (this.x - xCentre) - Math.sin(theta) * (this.y - yCentre) + xCentre;
-        this.y = Math.sin(theta) * (this.x - xCentre) + Math.cos(theta) * (this.y - yCentre) + yCentre;
+        if (Math.abs(this.thetaCount) < 6.283) {
+
+            this.cosResultTheta = Math.cos(this.thetaCount)
+            this.sinResultTheta = Math.sin(this.thetaCount)
+
+            this.x = this.cosResultTheta * (this.xOriginal - xCentre) - this.sinResultTheta * (this.yOriginal - yCentre) + xCentre;
+            this.y = this.sinResultTheta * (this.xOriginal - xCentre) + this.cosResultTheta * (this.yOriginal - yCentre) + yCentre;
+        }
+        else {
+            this.thetaCount = 0;
+
+            this.cosResultTheta = Math.cos(this.thetaCount)
+            this.sinResultTheta = Math.sin(this.thetaCount)
+
+            this.x = this.cosResultTheta * (this.xOriginal - xCentre) - this.sinResultTheta * (this.yOriginal - yCentre) + xCentre;
+            this.y = this.sinResultTheta * (this.xOriginal - xCentre) + this.cosResultTheta * (this.yOriginal - yCentre) + yCentre;
+        }
 
     }
-    //create generalised rotation function that takes 3 arguments and then uses these to modify the original coordinates within a domain of 0 - 2PI
 
-    rotateXYZ(phi, theta, psi, xCentre, yCentre, zCentre)
-    {
+    rotateY(phi, xCentre, zCentre) { // rotates around y-axis, obviously zCentre here will always be zero, but is provided for completeness
         this.phiCount += phi;
-        this.thetaCount += theta;
+
+        if (Math.abs(this.phiCount) < 6.283) {
+
+            this.cosResultPhi = Math.cos(this.phiCount)
+            this.sinResultPhi = Math.sin(this.phiCount)
+
+            this.x = this.cosResultPhi * (this.xOriginal - xCentre) + this.sinResultPhi * (this.zOriginal - zCentre) + xCentre;
+            this.z = -this.sinResultPhi * (this.xOriginal - xCentre) + 0 + this.cosResultPhi * (this.zOriginal - zCentre) + zCentre;
+        }
+        else {
+            this.phiCount = 0;
+
+            this.cosResultPhi = Math.cos(this.phiCount)
+            this.sinResultPhi = Math.sin(this.phiCount)
+
+            this.x = this.cosResultPhi * (this.xOriginal - xCentre) + this.sinResultPhi * (this.zOriginal - zCentre) + xCentre;
+            this.z = -this.sinResultPhi * (this.xOriginal - xCentre) + 0 + this.cosResultPhi * (this.zOriginal - zCentre) + zCentre;
+            
+        }
+    }
+
+    rotateX(psi, yCentre, zCentre) { // rotates around x-axis, zCentre will always be zero, but is provided for completeness
         this.psiCount += psi;
 
-        this.xR = this.xOriginal - xCentre;
-        this.yR = this.yOriginal - yCentre;
-        this.zR = this.zOriginal - zCentre;
+        this.cosResult = Math.cos(psi)
+        this.sinResult = Math.sin(psi)
 
-
-        this.x = this.xR * Math.cos(this.thetaCount) * Math.cos(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) - Math.cos(this.psiCount) * Math.sin(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) + Math.sin(this.psiCount) * Math.sin(this.phiCount))
-            + xCentre;
+        this.y = 0 + Math.cos(psi) * (this.y - yCentre) - Math.sin(psi) * (this.z - zCentre) + yCentre;
+        this.z = 0 + Math.sin(psi) * (this.y - yCentre) + Math.cos(psi) * (this.z - zCentre) + zCentre;
         
-        this.y = this.xR * Math.cos(this.thetaCount) * Math.sin(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) + Math.cos(this.psiCount) * Math.cos(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) - Math.sin(this.psiCount) * Math.cos(this.phiCount))
-            + yCentre;
-        
-        this.z = -this.xR * Math.sin(this.thetaCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.cos(this.thetaCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.cos(this.thetaCount))
-            + zCentre;
     }
 }
 
@@ -206,19 +231,6 @@ class VisualiserAnimation {
         }
     }
 
-    #rotateMeshXYZ(thetaSpeed, phiSpeed, psiSpeed) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateXYZ(
-                thetaSpeed * this.thetaIncrement, 
-                phiSpeed * this.thetaIncrement, 
-                psiSpeed * this.thetaIncrement,
-                this.widthCentre,
-                this.heightCentre,
-                0
-            );
-        }
-    }
-
     #rotateMeshZ(speed = 1) {
         for (let i = 0; i < this.ModelMesh.length; i++) {
             this.ModelMesh[i].rotateZ(speed*this.thetaIncrement, this.widthCentre , this.heightCentre);
@@ -245,7 +257,9 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(0.5, 3, 1)
+        this.#rotateMeshZ(2);
+        this.#rotateMeshY(2);
+        this.#rotateMeshX(80); // the max angular speed is 2
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 

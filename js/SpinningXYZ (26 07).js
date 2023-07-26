@@ -5,6 +5,7 @@ let visualiserAnimation;
 
 window.onload = function () {
     //JS waits for page to load first
+    console.log("hello from updated file");
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     canvas.width = 300
@@ -43,11 +44,6 @@ class PointCoordsNode{
     thetaCount;
     phiCount;
     psiCount;
-    
-    decimals;
-
-    cosResult;
-    sinResult;
 
     constructor(xA, yA, zA, nodelinks = []) {
         this.x = xA;
@@ -64,14 +60,9 @@ class PointCoordsNode{
         this.thetaCount = 0; 
         this.phiCount = 0;
         this.psiCount = 0;
-        this.decimals = 3;
-        this.cosResult = 0;
-        this.sinResult = 0;
-        this.xR = 0;
-        this.yR = 0;
-        this.zR = 0;
 
     }
+
     rotateZ(theta, xCentre, yCentre) { //rotates around the z-axis
         this.thetaCount += theta;
 
@@ -79,33 +70,66 @@ class PointCoordsNode{
         this.y = Math.sin(theta) * (this.x - xCentre) + Math.cos(theta) * (this.y - yCentre) + yCentre;
 
     }
-    //create generalised rotation function that takes 3 arguments and then uses these to modify the original coordinates within a domain of 0 - 2PI
 
-    rotateXYZ(phi, theta, psi, xCentre, yCentre, zCentre)
-    {
+    rotateY(phi, xCentre, zCentre) { // rotates around y-axis, obviously zCentre here will always be zero, but is provided for completeness
         this.phiCount += phi;
-        this.thetaCount += theta;
+        if (Math.abs(this.phiCount) > 1.57 && Math.abs(this.phiCount) < 1.59)
+        {
+            this.x = 0 + 0 + 1 * (this.zOriginal - zCentre) + xCentre;
+            this.z = -1 * (this.xOriginal - xCentre) + 0 + 0 + zCentre;
+            //other rotations need to be reapplied to z eg if psi != 0
+
+            this.y = 0 + Math.cos(this.psiCount) * (this.y - 150) - Math.sin(this.psiCount) * (this.z - zCentre) + 150;
+            this.z = 0 + Math.sin(this.psiCount) * (this.y - 150) + Math.cos(this.psiCount) * (this.z - zCentre) + zCentre;
+
+        }
+        else if (Math.abs(this.phiCount) > 4.71 && Math.abs(this.phiCount) < 4.73)
+        {
+            this.x = 0 + 0 -(this.zOriginal - zCentre) + xCentre;
+            this.z = (this.xOriginal - xCentre) + 0 + 0 + zCentre;
+
+        }
+        else if (Math.abs(this.phiCount) > 6.28)
+        {
+            this.x = (this.xOriginal - xCentre) + 0 + 0 + xCentre;
+            this.z = -0 + 0 + (this.zOriginal - zCentre) + zCentre;
+            this.phiCount = 0;
+
+        }
+        else
+        {
+            this.x = Math.cos(phi) * (this.x - xCentre) + 0 + Math.sin(phi) * (this.z - zCentre) + xCentre;
+            this.z = -Math.sin(phi) * (this.x - xCentre) + 0 + Math.cos(phi) * (this.z - zCentre) + zCentre;
+
+        }
+    
+    }
+
+    rotateX(psi, yCentre, zCentre) { // rotates around x-axis, zCentre will always be zero, but is provided for completeness
         this.psiCount += psi;
+        if (Math.abs(this.psiCount) > 1.57 && Math.abs(this.psiCount) < 1.59) //we can use the psi argument with psiCount to determine the boundaries for when correction is needed
+        {
+            this.y = 0 + 0 - (this.zOriginal - zCentre) + yCentre;
+            this.z = 0 + 1 * (this.yOriginal - yCentre) + 0 + zCentre;
 
-        this.xR = this.xOriginal - xCentre;
-        this.yR = this.yOriginal - yCentre;
-        this.zR = this.zOriginal - zCentre;
 
-
-        this.x = this.xR * Math.cos(this.thetaCount) * Math.cos(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) - Math.cos(this.psiCount) * Math.sin(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) + Math.sin(this.psiCount) * Math.sin(this.phiCount))
-            + xCentre;
-        
-        this.y = this.xR * Math.cos(this.thetaCount) * Math.sin(this.phiCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) + Math.cos(this.psiCount) * Math.cos(this.phiCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.sin(this.phiCount) - Math.sin(this.psiCount) * Math.cos(this.phiCount))
-            + yCentre;
-        
-        this.z = -this.xR * Math.sin(this.thetaCount)
-            + this.yR * (Math.sin(this.psiCount) * Math.cos(this.thetaCount))
-            + this.zR * (Math.cos(this.psiCount) * Math.cos(this.thetaCount))
-            + zCentre;
+        }
+        else if (Math.abs(this.psiCount) > 4.71 && Math.abs(this.psiCount) < 4.73)
+        {
+            this.y = 0 + 0 + (this.zOriginal - zCentre) + yCentre;
+            this.z = 0 - (this.yOriginal - yCentre) + 0 + zCentre;
+        }
+        else if (Math.abs(this.psiCount) > 6.28)
+        {
+            this.y = 0 + (this.yOriginal - yCentre) - 0 + yCentre;
+            this.z = 0 + 0 + (this.zOriginal - zCentre) + zCentre;
+            this.psiCount = 0; //reset count
+        }
+        else
+        {
+            this.y = 0 + Math.cos(psi) * (this.y - yCentre) - Math.sin(psi) * (this.z - zCentre) + yCentre;
+            this.z = 0 + Math.sin(psi) * (this.y - yCentre) + Math.cos(psi) * (this.z - zCentre) + zCentre;
+        }
     }
 }
 
@@ -206,19 +230,6 @@ class VisualiserAnimation {
         }
     }
 
-    #rotateMeshXYZ(thetaSpeed, phiSpeed, psiSpeed) {
-        for (let i = 0; i < this.ModelMesh.length; i++) {
-            this.ModelMesh[i].rotateXYZ(
-                thetaSpeed * this.thetaIncrement, 
-                phiSpeed * this.thetaIncrement, 
-                psiSpeed * this.thetaIncrement,
-                this.widthCentre,
-                this.heightCentre,
-                0
-            );
-        }
-    }
-
     #rotateMeshZ(speed = 1) {
         for (let i = 0; i < this.ModelMesh.length; i++) {
             this.ModelMesh[i].rotateZ(speed*this.thetaIncrement, this.widthCentre , this.heightCentre);
@@ -245,7 +256,9 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(0.5, 3, 1)
+        //this.#rotateMeshZ(2);
+        //this.#rotateMeshY(2);
+        this.#rotateMeshX(2); // the max angular speed is 2
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 
