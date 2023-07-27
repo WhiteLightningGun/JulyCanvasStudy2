@@ -101,17 +101,17 @@ class PointCoordsNode{
         this.thetaCount += theta;
         this.psiCount += psi;
 
-        if (this.phiCount > 6.28)
+        if (Math.abs(this.phiCount) > 6.28)
         {
             this.phiCount = 0;
         }
         
-        if (this.thetaCount > 6.28)
+        if (Math.abs(this.thetaCount) > 6.28)
         {
             this.thetaCount = 0;
         }
         
-        if (this.psiCount > 6.28)
+        if (Math.abs(this.psiCount) > 6.28)
         {
             this.psiCount = 0;
         }
