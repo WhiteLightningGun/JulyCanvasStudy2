@@ -7,26 +7,20 @@ window.onload = function () {
     //JS waits for page to load first
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
-    canvas.width = 300;
-    canvas.height = 300;
+    canvas.width = 300
+    canvas.height = 300
+    
+    canvas.addEventListener('mousedown', function (e) {
+        getCursorPosition(canvas, e)
+
+    });
 
     //create function to generate a CubeModel
     let CubeModel = CreateCube(150);
     
     visualiserField = new VisualiserAnimation(ctx, canvas.width, canvas.height, CubeModel);
-
-    canvas.addEventListener('mousedown', function (e) {
-        let cursorXY = getCursorPosition(canvas, e);
-        visualiserField.canvasClickToAngularVelocity(cursorXY);
-
-    });
-
-    const kRangeSlider = document.getElementById('kRange');
-    kRangeSlider.addEventListener('change', function(e){
-        visualiserField.changeFocalLength(kRangeSlider.value);
-    })
-
     visualiserField.animate();
+    
 }
 
 function reset() {
@@ -44,16 +38,11 @@ function reset() {
 function getCursorPosition(canvas, event) {
 
     const xP = event.offsetX;
-    const yP = event.offsetY  - 50; // minus 50 added for some reason to make it work
-    return [xP, yP];
+    const yP = event.offsetY  - 50;
+    console.log("x: " + xP + " y: " + yP)
 }
 
-function focalLengthAdjust(){
 
-    const newK = document.getElementById('kRange');
-    console.log(newK.value);
-
-}
 
 class PointCoordsNode{
     x;
@@ -96,7 +85,6 @@ class PointCoordsNode{
         this.yR = 0;
         this.zR = 0;
 
-
     }
     rotateZ(theta, xCentre, yCentre) { //rotates around the z-axis
         this.thetaCount += theta;
@@ -132,6 +120,7 @@ class PointCoordsNode{
         this.yR = this.yOriginal - yCentre;
         this.zR = this.zOriginal - zCentre;
 
+
         this.x = this.xR * Math.cos(this.thetaCount) * Math.cos(this.phiCount)
             + this.yR * (Math.sin(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) - Math.cos(this.psiCount) * Math.sin(this.phiCount))
             + this.zR * (Math.cos(this.psiCount) * Math.sin(this.thetaCount) * Math.cos(this.phiCount) + Math.sin(this.psiCount) * Math.sin(this.phiCount))
@@ -158,7 +147,7 @@ class VisualiserAnimation {
 
     constructor(ctx, width, height, meshArgument) {
         this.#ctx = ctx;
-        this.#ctx.strokeStyle = "#FF400040"; //"#FF5500"; FF5500 is hot red
+        this.#ctx.strokeStyle = "#FF400030"; //"#FF5500"; FF5500 is hot red
         this.#ctx.lineWidth = 1;
         this.#width = width;
         this.#height = height;
@@ -168,46 +157,22 @@ class VisualiserAnimation {
         this.heightCentre = height / 2;
         this.time = 0;
         this.radius = 5;
-        this.thetaIncrement = 0.01; // i.e. minimal increment of rotation when angular speed is 1
+        this.thetaIncrement = -0.01; // i.e. speed of rotation
         this.theta = 0;
         this.cameraLocation = [150, 150, 500];
         this.focalLength = 300; //focal length, vaguely analogous to zoom
         this.zO = 4; //focus...
         this.zPrime = this.focalLength + this.zO;
 
-        // initial coordinates for x and y
+
+        //initial coordinates for x and y
         this.x = this.#width;
         this.y = this.#height;
 
-        // background colour
+        //background colour
         this.#ctx.fillStyle = "#00000080";
         this.#ctx.fillRect(0, 0, this.#width, this.#height);
 
-        // angular speeds with initial speed of 0
-        this.thetaVelocity = -3;
-        this.psiVelocity = 1;
-        this.maxAngularSpeed = 5;
-    }
-
-    changeFocalLength(kArg){
-        // this is designed to work with kArg in domain 1-100;
-        this.focalLengthDelta = this.focalLength*(kArg/100) - this.focalLength/2;
-        this.zPrime = this.focalLength + this.focalLengthDelta + this.zO;
-    }
-
-    canvasClickToAngularVelocity(xyArray){
-        let relativeX = xyArray[0] - this.widthCentre;
-        let relativeY = xyArray[1] - this.heightCentre;
-        //convert to numbers between 0 - max angular speed = 3
-        relativeX = this.maxAngularSpeed *(relativeX/this.widthCentre);
-        relativeY = this.maxAngularSpeed *(relativeY/this.heightCentre);
-        this.#changeAngularSpeeds(relativeX, -relativeY);
-    }
-
-    #changeAngularSpeeds(thetaVelocity, psiVelocity)
-    {
-        this.thetaVelocity = thetaVelocity;
-        this.psiVelocity = psiVelocity;
     }
 
     #drawMesh() {
@@ -289,7 +254,7 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(0, this.thetaVelocity, this.psiVelocity)
+        this.#rotateMeshXYZ(0, 1, 1)
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 
