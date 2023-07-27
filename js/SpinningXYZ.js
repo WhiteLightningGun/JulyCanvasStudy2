@@ -22,8 +22,14 @@ window.onload = function () {
     });
 
     const kRangeSlider = document.getElementById('kRange');
-    kRangeSlider.addEventListener('change', function(e){
-        visualiserField.changeFocalLength(kRangeSlider.value);
+
+    kRangeSlider.addEventListener('mousedown', function (e) {
+        
+        setInterval(() => {
+            visualiserField.changeFocalLength(kRangeSlider.value);
+
+        }, 20)
+
     })
 
     visualiserField.animate();
