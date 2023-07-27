@@ -9,6 +9,11 @@ window.onload = function () {
     ctx = canvas.getContext('2d');
     canvas.width = 300
     canvas.height = 300
+    
+    canvas.addEventListener('mousedown', function (e) {
+        getCursorPosition(canvas, e)
+
+    });
 
     //create function to generate a CubeModel
     let CubeModel = CreateCube(150);
@@ -29,6 +34,15 @@ function reset() {
     visualiserField = new VisualiserAnimation(ctx, canvas.width, canvas.height, TriangleModel);
     visualiserField.animate();
 }
+
+function getCursorPosition(canvas, event) {
+
+    const xP = event.offsetX;
+    const yP = event.offsetY  - 50;
+    console.log("x: " + xP + " y: " + yP)
+}
+
+
 
 class PointCoordsNode{
     x;
@@ -87,6 +101,21 @@ class PointCoordsNode{
         this.thetaCount += theta;
         this.psiCount += psi;
 
+        if (this.phiCount > 6.28)
+        {
+            this.phiCount = 0;
+        }
+        
+        if (this.thetaCount > 6.28)
+        {
+            this.thetaCount = 0;
+        }
+        
+        if (this.psiCount > 6.28)
+        {
+            this.psiCount = 0;
+        }
+
         this.xR = this.xOriginal - xCentre;
         this.yR = this.yOriginal - yCentre;
         this.zR = this.zOriginal - zCentre;
@@ -128,7 +157,7 @@ class VisualiserAnimation {
         this.heightCentre = height / 2;
         this.time = 0;
         this.radius = 5;
-        this.thetaIncrement = -0.01; // i.e. speed of rotation, don't change this until I have made pi/2 detection more robust
+        this.thetaIncrement = -0.01; // i.e. speed of rotation
         this.theta = 0;
         this.cameraLocation = [150, 150, 500];
         this.focalLength = 300; //focal length, vaguely analogous to zoom
@@ -142,9 +171,7 @@ class VisualiserAnimation {
 
         //background colour
         this.#ctx.fillStyle = "#00000080";
-        this.#ctx.fillRect(0, 0, 300, 300);
-
-       
+        this.#ctx.fillRect(0, 0, this.#width, this.#height);
 
     }
 
@@ -227,7 +254,7 @@ class VisualiserAnimation {
 
         this.#drawMesh();
         //rotate
-        this.#rotateMeshXYZ(2, 3, 1)
+        this.#rotateMeshXYZ(0, 1, 1)
 
         visualiserAnimation = requestAnimationFrame(this.animate.bind(this)); //animate passes a time stamp implicitly
 
