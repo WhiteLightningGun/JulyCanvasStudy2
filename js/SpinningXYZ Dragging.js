@@ -13,13 +13,30 @@ window.onload = function () {
     //create function to generate a CubeModel
     let CubeModel = CreateCube(150);
     
-    visualiserField = new VisualiserAnimation(ctx, canvas.width, canvas.height, CubeModel);
+    visualiserField = new VisualiserAnimation(ctx, canvas.width, canvas.height, CubeModel, canvas);
 
     canvas.addEventListener('mousedown', function (e) {
         let cursorXY = getCursorPosition(canvas, e);
-        visualiserField.canvasClickToAngularVelocity(cursorXY);
 
+        //send cursorXY to visualiser to be stored as "initial position" from which displacement vectors can be calculated 
+        // while the mousedown is still active
+        visualiserField.setCurrentMouseDown(cursorXY);
+        
     });
+
+    canvas.addEventListener('mouseup', function (e) {
+        visualiserField.ClickListenerFalse()
+    });
+
+    canvas.addEventListener('mousemove', function (e) {
+
+        visualiserField.mouseCoords = [e.offsetX, e.offsetY - 50];
+    });
+
+    canvas.addEventListener('mouseout', function (e) {
+        visualiserField.ClickListenerFalse()
+    });
+
 
     const kRangeSlider = document.getElementById('kRange');
 
@@ -103,6 +120,7 @@ class PointCoordsNode{
         this.zR = 0;
 
 
+
     }
     rotateZ(theta, xCentre, yCentre) { //rotates around the z-axis
         this.thetaCount += theta;
@@ -162,7 +180,7 @@ class VisualiserAnimation {
     #height;
     ModelMesh;
 
-    constructor(ctx, width, height, meshArgument) {
+    constructor(ctx, width, height, meshArgument, _canvas) {
         this.#ctx = ctx;
         this.#ctx.strokeStyle = "#FF400040"; //"#FF5500"; FF5500 is hot red
         this.#ctx.lineWidth = 1;
@@ -181,18 +199,26 @@ class VisualiserAnimation {
         this.zO = 4; //focus...
         this.zPrime = this.focalLength + this.zO;
 
+        this.canvas = _canvas;
+        this.mousedowned = false;
+        this.mousedownX = 150;
+        this.mouseownY = 150;
+        this.mouseCoords = [0, 0];
+
+
         // initial coordinates for x and y
         this.x = this.#width;
         this.y = this.#height;
 
         // background colour
-        this.#ctx.fillStyle = "#00000080";
+        this.#ctx.fillStyle = "#00000080"; // transparent black
         this.#ctx.fillRect(0, 0, this.#width, this.#height);
 
         // angular speeds with initial speed of 0
-        this.thetaVelocity = -3;
+        this.thetaVelocity = -1;
         this.psiVelocity = 1;
         this.maxAngularSpeed = 5;
+
     }
 
     changeFocalLength(kArg){
@@ -201,12 +227,38 @@ class VisualiserAnimation {
         this.zPrime = this.focalLength + this.focalLengthDelta + this.zO;
     }
 
-    canvasClickToAngularVelocity(xyArray){
-        let relativeX = xyArray[0] - this.widthCentre;
-        let relativeY = xyArray[1] - this.heightCentre;
+    ClickListenerSwitch(){
+        if(this.mousedowned === false)
+        {
+            this.mousedowned = true;
+        }
+        else{
+            this.mousedowned = false;
+        }
+        
+    }
+
+    ClickListenerFalse(){
+        this.mousedowned = false;
+    }
+
+    setCurrentMouseDown(xyArray){
+        this.mousedownX = xyArray[0];
+        this.mousedownY = xyArray[1];
+        this.ClickListenerSwitch();
+        //console.log(`currentMouseDown coords: ${this.mousedownX}, ${this.mousedownY} and mousedowned: ${this.mousedowned}`);
+    }
+
+    canvasClickToAngularVelocity(){
+
+        let relativeX = this.mouseCoords[0] - this.mousedownX;
+        let relativeY = this.mouseCoords[1] - this.mousedownY;
+        //console.log(`relative pos: ${relativeX}, ${relativeY}`);
+
         //convert to numbers between 0 - max angular speed = 3
         relativeX = this.maxAngularSpeed *(relativeX/this.widthCentre);
         relativeY = this.maxAngularSpeed *(relativeY/this.heightCentre);
+
         this.#changeAngularSpeeds(relativeX, -relativeY);
     }
 
@@ -217,9 +269,6 @@ class VisualiserAnimation {
     }
 
     #drawMesh() {
-        //iterates through mesh data structure and
-
-        //perspective pass should happen here
 
         for (let i = 0; i < this.ModelMesh.length; i++){
             this.#drawVertex(this.ModelMesh[i].x, this.ModelMesh[i].y, this.ModelMesh[i].z);
@@ -293,6 +342,10 @@ class VisualiserAnimation {
         this.#ctx.fillStyle = "#00000090"; //transparent black
         this.#ctx.fillRect(0, 0, 300, 300);
 
+        if(this.mousedowned){
+            //console.log(this.mouseCoords);
+            this.canvasClickToAngularVelocity();
+        }
         this.#drawMesh();
         //rotate
         this.#rotateMeshXYZ(0, this.thetaVelocity, this.psiVelocity)
